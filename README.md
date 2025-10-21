@@ -22,7 +22,7 @@ Under the PPE model, you do not pay for underlying Compute Units (CUs) or typica
 | Event Name | Unit Charged | Price | Description |
 | :--- | :--- | :--- | :--- |
 | **`apify-actor-start`** | Per run | $0.00005 | The compulsory charge for initiating the Actor run. |
-| **`RAG_QUERY`** | Per query | **$0.05000** | Charges for executing one search query, including the Google SERP lookup and the attempt to crawl up to 3 target web pages. |
+| **`RAG_QUERY`** | Per query | **$0.002** | Charges for executing one search query, including the Google SERP lookup and the attempt to crawl up to 3 target web pages. |
 
 ### Note on Cost
 
