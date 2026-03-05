@@ -88,6 +88,8 @@ async function processInputInternal(
         readableTextCharThreshold,
         removeCookieWarnings,
         removeElementsCssSelector,
+        chunkSize: input.chunkSize ?? 0,
+        chunkOverlap: input.chunkOverlap ?? 100,
     };
 
     return { input, searchCrawlerOptions, contentScraperSettings };
@@ -277,6 +279,30 @@ function validateAndFillInput(input: Partial<Input>, standbyInit: boolean): Inpu
     // Debug mode
     if (input.debugMode === undefined) {
         input.debugMode = inputSchema.properties.debugMode.default;
+    }
+
+    // Chunk size
+    input.chunkSize = validateRange(
+        input.chunkSize,
+        inputSchema.properties.chunkSize.minimum,
+        inputSchema.properties.chunkSize.maximum,
+        inputSchema.properties.chunkSize.default,
+        'chunkSize',
+    );
+
+    // Chunk overlap
+    input.chunkOverlap = validateRange(
+        input.chunkOverlap,
+        inputSchema.properties.chunkOverlap.minimum,
+        inputSchema.properties.chunkOverlap.maximum,
+        inputSchema.properties.chunkOverlap.default,
+        'chunkOverlap',
+    );
+
+    // Validate chunkOverlap < chunkSize when chunking is enabled
+    if (input.chunkSize > 0 && input.chunkOverlap >= input.chunkSize) {
+        log.warning(`The \`chunkOverlap\` (${input.chunkOverlap}) must be less than \`chunkSize\` (${input.chunkSize}). Setting chunkOverlap to ${Math.floor(input.chunkSize * 0.2)}.`);
+        input.chunkOverlap = Math.floor(input.chunkSize * 0.2);
     }
 
     return input as Input;

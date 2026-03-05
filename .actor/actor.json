@@ -1,22 +1,31 @@
 {
     "actorSpecification": 1,
     "name": "rag-web-browser",
-    "title": "RAG Web browser",
-    "description": "Web browser for OpenAI Assistants API and RAG pipelines, similar to a web browser in ChatGPT. It queries Google Search, scrapes the top N pages from the results, and returns their cleaned content as Markdown for further processing by an LLM.",
+    "title": "RAG Web Browser - Search & Extract Web Content for LLMs",
+    "description": "Web browser for AI agents, OpenAI Assistants API, and RAG pipelines. Queries Google Search, scrapes the top N pages, and returns clean Markdown, plain text, or HTML — ready for LLM processing. Supports chunked output for direct embedding into vector databases. Works as a tool in LangChain, CrewAI, LlamaIndex, and custom GPTs.",
     "version": "1.0",
+    "seoTitle": "RAG Web Browser: Real-Time Web Search & Content Extraction for AI Agents & LLMs",
+    "seoDescription": "Give your AI agent live web access. This Apify Actor searches Google, scrapes result pages, and returns clean Markdown with optional chunking — perfect for RAG pipelines, OpenAI Assistants, LangChain tools, and custom GPTs. Pay-per-event pricing starting at $0.002/query.",
+    "categories": [
+        "AI",
+        "SEARCH_ENGINES"
+    ],
     "input": "./input_schema.json",
     "dockerfile": "./Dockerfile",
     "storages": {
         "dataset": {
             "actorSpecification": 1,
             "title": "RAG Web Browser",
-            "description": "Too see all scraped properties, export the whole dataset or select All fields instead of Overview.",
+            "description": "To see all scraped properties, export the whole dataset or select All fields instead of Overview.",
             "views": {
                 "overview": {
                     "title": "Overview",
                     "description": "An view showing just basic properties for simplicity.",
                     "transformation": {
-                        "flatten": ["metadata", "searchResult"],
+                        "flatten": [
+                            "metadata",
+                            "searchResult"
+                        ],
                         "fields": [
                             "metadata.url",
                             "metadata.title",
@@ -50,7 +59,9 @@
                     "title": "Search results",
                     "description": "A view showing just the Google Search results, without the page content.",
                     "transformation": {
-                        "flatten": ["searchResult"],
+                        "flatten": [
+                            "searchResult"
+                        ],
                         "fields": [
                             "searchResult.title",
                             "searchResult.description",

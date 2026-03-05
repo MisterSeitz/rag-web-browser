@@ -2,7 +2,8 @@ import { Actor } from 'apify';
 import { load } from 'cheerio';
 import { type CheerioCrawlingContext, htmlToText, log, type PlaywrightCrawlingContext, type Request, sleep } from 'crawlee';
 
-import { ContentCrawlerStatus, ContentCrawlerTypes } from './const.js';
+import { ContentCrawlerStatus, ContentCrawlerTypes, PPE_EVENT_PAGE_CRAWLED } from './const.js';
+import { chunkText } from './chunking.js';
 import { addResultToResponse, responseData, sendResponseIfFinished } from './responses.js';
 import type { ContentCrawlerUserData, Output } from './types.js';
 import { addTimeMeasureEvent, isActorStandby, transformTimeMeasuresToRelative } from './utils.js';
@@ -145,7 +146,20 @@ async function handleContent(
         text: settings.outputFormats.includes('text') ? text : undefined,
         markdown: settings.outputFormats.includes('markdown') ? htmlToMarkdown(processedHtml) : undefined,
         html: settings.outputFormats.includes('html') ? processedHtml : undefined,
+        chunks: undefined,
     };
+
+    // Apply chunking if enabled
+    if (settings.chunkSize > 0) {
+        const contentToChunk = result.markdown ?? result.text ?? text;
+        if (contentToChunk) {
+            result.chunks = chunkText(contentToChunk, {
+                chunkSize: settings.chunkSize,
+                chunkOverlap: settings.chunkOverlap,
+            });
+            log.info(`Chunked content into ${result.chunks.length} chunks for ${request.url}`);
+        }
+    }
 
     addTimeMeasureEvent(request.userData, `${crawlerType}-before-response-send`);
     if (settings.debugMode) {
@@ -153,6 +167,14 @@ async function handleContent(
     }
     log.info(`Adding result to the Apify dataset, url: ${request.url}`);
     await context.pushData(result);
+
+    // Charge for the successfully crawled page (Pay-per-Event)
+    try {
+        await Actor.charge({ eventName: PPE_EVENT_PAGE_CRAWLED, count: 1 });
+        log.info(`Charged PPE event '${PPE_EVENT_PAGE_CRAWLED}' for ${request.url}`);
+    } catch (err) {
+        log.warning(`Failed to charge PPE event '${PPE_EVENT_PAGE_CRAWLED}': ${(err as Error).message}`);
+    }
 
     // Get responseId from the request.userData, which corresponds to the original search request
     if (responseId) {

@@ -30,6 +30,10 @@ export type Input = {
     htmlTransformer: string;
     removeCookieWarnings: boolean;
     scrapingTool: ScrapingTool;
+
+    // RAG chunking parameters
+    chunkSize: number;
+    chunkOverlap: number;
 };
 
 export type SearchResultType = 'ORGANIC' | 'SUGGESTED';
@@ -44,26 +48,26 @@ export type OrganicResult = {
 
 export interface TimeMeasure {
     event:
-        | 'actor-started'
-        | 'before-cheerio-queue-add'
-        | 'before-cheerio-run'
-        | 'before-playwright-queue-add'
-        | 'before-playwright-run'
-        | 'cheerio-request-start'
-        | 'cheerio-failed-request'
-        | 'cheerio-process-html'
-        | 'cheerio-request-end'
-        | 'cheerio-request-handler-start'
-        | 'cheerio-before-response-send'
-        | 'error'
-        | 'playwright-request-start'
-        | 'playwright-wait-dynamic-content'
-        | 'playwright-parse-with-cheerio'
-        | 'playwright-process-html'
-        | 'playwright-remove-cookie'
-        | 'playwright-before-response-send'
-        | 'playwright-failed-request'
-        | 'request-received';
+    | 'actor-started'
+    | 'before-cheerio-queue-add'
+    | 'before-cheerio-run'
+    | 'before-playwright-queue-add'
+    | 'before-playwright-run'
+    | 'cheerio-request-start'
+    | 'cheerio-failed-request'
+    | 'cheerio-process-html'
+    | 'cheerio-request-end'
+    | 'cheerio-request-handler-start'
+    | 'cheerio-before-response-send'
+    | 'error'
+    | 'playwright-request-start'
+    | 'playwright-wait-dynamic-content'
+    | 'playwright-parse-with-cheerio'
+    | 'playwright-process-html'
+    | 'playwright-remove-cookie'
+    | 'playwright-before-response-send'
+    | 'playwright-failed-request'
+    | 'request-received';
     timeMs: number;
     timeDeltaPrevMs: number;
 }
@@ -77,6 +81,8 @@ export interface ContentScraperSettings {
     readableTextCharThreshold: number;
     removeCookieWarnings?: boolean;
     removeElementsCssSelector?: string;
+    chunkSize: number;
+    chunkOverlap: number;
 }
 
 export type SearchCrawlerUserData = {
@@ -97,10 +103,18 @@ export type ContentCrawlerUserData = {
     contentScraperSettings: ContentScraperSettings;
 };
 
+export interface ContentChunk {
+    text: string;
+    index: number;
+    startChar: number;
+    endChar: number;
+}
+
 export type Output = {
     text?: string | null;
     html?: string | null;
     markdown?: string | null;
+    chunks?: ContentChunk[] | null;
     query?: string;
     crawl: {
         createdAt?: Date;

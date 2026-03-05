@@ -73,6 +73,8 @@ describe('Playwright Crawler Content Tests', () => {
                 readableTextCharThreshold: 50,
                 maxHtmlCharsToProcess: 100000,
                 dynamicContentWaitSecs: 20,
+                chunkSize: 0,
+                chunkOverlap: 100,
             },
             [],
         );

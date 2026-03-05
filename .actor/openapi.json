@@ -1,0 +1,210 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "RAG Web Browser",
+        "description": "Search Google and extract clean web content for LLMs and RAG pipelines. Returns Markdown, plain text, or HTML from the top search results.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://YOUR_STANDBY_URL",
+            "description": "Actor Standby endpoint. Replace with your actual Standby URL from Apify Console."
+        }
+    ],
+    "paths": {
+        "/search": {
+            "get": {
+                "operationId": "searchWeb",
+                "summary": "Search Google and extract content from top results",
+                "description": "Accepts a search query or direct URL, queries Google Search, scrapes the top N result pages, and returns their content as clean Markdown (or text/HTML). Use this to get up-to-date information from the web.",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "required": true,
+                        "description": "Google Search keywords or a specific URL to scrape. Supports advanced Google search operators like site:, inurl:, etc.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "latest AI news 2026"
+                    },
+                    {
+                        "name": "maxResults",
+                        "in": "query",
+                        "required": false,
+                        "description": "Maximum number of top Google Search results to scrape. Ignored when query is a URL.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 3,
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    },
+                    {
+                        "name": "outputFormats",
+                        "in": "query",
+                        "required": false,
+                        "description": "Comma-separated list of output formats: text, markdown, html.",
+                        "schema": {
+                            "type": "string",
+                            "default": "markdown"
+                        },
+                        "example": "markdown"
+                    },
+                    {
+                        "name": "scrapingTool",
+                        "in": "query",
+                        "required": false,
+                        "description": "Scraping method. 'raw-http' is fast (default). 'browser-playwright' handles JavaScript-heavy sites.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "raw-http",
+                                "browser-playwright"
+                            ],
+                            "default": "raw-http"
+                        }
+                    },
+                    {
+                        "name": "requestTimeoutSecs",
+                        "in": "query",
+                        "required": false,
+                        "description": "Maximum time in seconds for the entire request including search and scraping.",
+                        "schema": {
+                            "type": "integer",
+                            "default": 40,
+                            "minimum": 1,
+                            "maximum": 300
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved search results with extracted content.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SearchResult"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SearchResult": {
+                "type": "object",
+                "properties": {
+                    "metadata": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of the scraped page."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The page title."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "The meta description of the page."
+                            },
+                            "author": {
+                                "type": "string",
+                                "description": "The author of the page content, if available."
+                            },
+                            "languageCode": {
+                                "type": "string",
+                                "description": "The language code of the page (e.g. 'en')."
+                            }
+                        }
+                    },
+                    "searchResult": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "The title from Google's search results."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "The Google search snippet for this result."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "The URL from Google's search results."
+                            },
+                            "resultType": {
+                                "type": "string",
+                                "enum": [
+                                    "ORGANIC",
+                                    "SUGGESTED"
+                                ],
+                                "description": "The type of search result."
+                            },
+                            "rank": {
+                                "type": "integer",
+                                "description": "The rank position in search results."
+                            }
+                        }
+                    },
+                    "markdown": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The extracted page content in Markdown format."
+                    },
+                    "text": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The extracted page content in plain text format."
+                    },
+                    "html": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The extracted page content in HTML format."
+                    },
+                    "query": {
+                        "type": "string",
+                        "description": "The original search query."
+                    }
+                }
+            },
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "errorMessage": {
+                        "type": "string",
+                        "description": "Description of the error."
+                    }
+                }
+            }
+        }
+    }
+}
