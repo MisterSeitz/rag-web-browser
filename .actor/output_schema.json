@@ -1,0 +1,12 @@
+{
+    "actorOutputSchemaVersion": 1,
+    "title": "RAG Web Browser output",
+    "description": "Search results with extracted web page content in Markdown, plain text, or HTML format, with optional chunking for RAG pipelines.",
+    "properties": {
+        "results": {
+            "type": "string",
+            "title": "Extracted content",
+            "template": "{{links.apiDefaultDatasetUrl}}/items"
+        }
+    }
+}

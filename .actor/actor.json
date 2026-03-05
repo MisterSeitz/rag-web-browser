@@ -11,87 +11,9 @@
         "SEARCH_ENGINES"
     ],
     "input": "./input_schema.json",
+    "output": "./output_schema.json",
     "dockerfile": "./Dockerfile",
     "storages": {
-        "dataset": {
-            "actorSpecification": 1,
-            "title": "RAG Web Browser",
-            "description": "To see all scraped properties, export the whole dataset or select All fields instead of Overview.",
-            "views": {
-                "overview": {
-                    "title": "Overview",
-                    "description": "An view showing just basic properties for simplicity.",
-                    "transformation": {
-                        "flatten": [
-                            "metadata",
-                            "searchResult"
-                        ],
-                        "fields": [
-                            "metadata.url",
-                            "metadata.title",
-                            "searchResult.resultType",
-                            "markdown"
-                        ]
-                    },
-                    "display": {
-                        "component": "table",
-                        "properties": {
-                            "metadata.url": {
-                                "label": "Page URL",
-                                "format": "text"
-                            },
-                            "metadata.title": {
-                                "label": "Page title",
-                                "format": "text"
-                            },
-                            "searchResult.resultType": {
-                                "label": "Result type",
-                                "format": "text"
-                            },
-                            "text": {
-                                "label": "Extracted Markdown",
-                                "format": "text"
-                            }
-                        }
-                    }
-                },
-                "searchResults": {
-                    "title": "Search results",
-                    "description": "A view showing just the Google Search results, without the page content.",
-                    "transformation": {
-                        "flatten": [
-                            "searchResult"
-                        ],
-                        "fields": [
-                            "searchResult.title",
-                            "searchResult.description",
-                            "searchResult.resultType",
-                            "searchResult.url"
-                        ]
-                    },
-                    "display": {
-                        "component": "table",
-                        "properties": {
-                            "searchResult.description": {
-                                "label": "Description",
-                                "format": "text"
-                            },
-                            "searchResult.title": {
-                                "label": "Title",
-                                "format": "text"
-                            },
-                            "searchResult.resultType": {
-                                "label": "Result type",
-                                "format": "text"
-                            },
-                            "searchResult.url": {
-                                "label": "URL",
-                                "format": "text"
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        "dataset": "./dataset_schema.json"
     }
 }

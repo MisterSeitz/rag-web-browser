@@ -66,7 +66,7 @@ You pay only for the pages you actually get — no CU charges for the Actor run 
 
 | Event Name | Title | Unit | Price | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `page-crawled` | Page crawled | Per page | **$0.007** | Charged each time a web page is successfully crawled and its content is extracted. Failed or skipped pages are not charged. |
+| `apify-default-dataset-item` | Page crawled | Per page | **$0.007** | Charged each time a web page is successfully crawled and its content is extracted. Failed or skipped pages are not charged. |
 
 **Example cost:** A search with `maxResults: 3` that successfully scrapes all 3 pages costs **$0.021**.
 

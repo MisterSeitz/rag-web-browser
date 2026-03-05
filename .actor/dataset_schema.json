@@ -1,0 +1,290 @@
+{
+    "actorSpecification": 1,
+    "fields": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "Extracted page content in plain text format."
+            },
+            "html": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "Extracted page content in HTML format."
+            },
+            "markdown": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "Extracted page content in Markdown format."
+            },
+            "chunks": {
+                "type": [
+                    "array",
+                    "null"
+                ],
+                "description": "Content split into overlapping chunks for embedding into vector databases. Only present when chunkSize > 0.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "text": {
+                            "type": "string",
+                            "description": "The chunk text content."
+                        },
+                        "index": {
+                            "type": "integer",
+                            "description": "Zero-based index of this chunk within the page."
+                        },
+                        "startChar": {
+                            "type": "integer",
+                            "description": "Starting character offset in the original text."
+                        },
+                        "endChar": {
+                            "type": "integer",
+                            "description": "Ending character offset (exclusive) in the original text."
+                        }
+                    },
+                    "required": [
+                        "text",
+                        "index",
+                        "startChar",
+                        "endChar"
+                    ]
+                }
+            },
+            "query": {
+                "type": "string",
+                "description": "The original search query."
+            },
+            "crawl": {
+                "type": "object",
+                "description": "Crawl metadata for this result.",
+                "properties": {
+                    "httpStatusCode": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "HTTP status code returned by the target page."
+                    },
+                    "httpStatusMessage": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "HTTP status message or error description."
+                    },
+                    "loadedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "ISO timestamp when the page was loaded."
+                    },
+                    "requestStatus": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "handled",
+                            "failed"
+                        ],
+                        "description": "Status of the crawl request."
+                    },
+                    "uniqueKey": {
+                        "type": "string",
+                        "description": "Unique key identifying this request."
+                    }
+                },
+                "required": [
+                    "requestStatus",
+                    "uniqueKey"
+                ]
+            },
+            "searchResult": {
+                "type": "object",
+                "description": "The Google Search result entry that led to this page.",
+                "properties": {
+                    "title": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Title from the Google SERP listing."
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Snippet/description from the Google SERP listing."
+                    },
+                    "url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "URL from the Google SERP listing."
+                    },
+                    "resultType": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "ORGANIC",
+                            "SUGGESTED",
+                            null
+                        ],
+                        "description": "Type of search result."
+                    },
+                    "rank": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Rank position in search results."
+                    }
+                }
+            },
+            "metadata": {
+                "type": "object",
+                "description": "Metadata extracted from the target page.",
+                "properties": {
+                    "title": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "The page <title> element text."
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "The URL that was requested."
+                    },
+                    "redirectedUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "The final URL after redirects, if different from the original."
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Content of the page's meta description tag."
+                    },
+                    "author": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Content of the page's meta author tag."
+                    },
+                    "languageCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Language code from the page's html lang attribute."
+                    }
+                },
+                "required": [
+                    "url"
+                ]
+            }
+        },
+        "required": [
+            "crawl",
+            "metadata"
+        ]
+    },
+    "views": {
+        "overview": {
+            "title": "Overview",
+            "description": "A view showing the key properties of each crawled page.",
+            "transformation": {
+                "flatten": [
+                    "metadata",
+                    "searchResult"
+                ],
+                "fields": [
+                    "metadata.url",
+                    "metadata.title",
+                    "searchResult.resultType",
+                    "markdown"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "metadata.url": {
+                        "label": "Page URL",
+                        "format": "link"
+                    },
+                    "metadata.title": {
+                        "label": "Page title",
+                        "format": "text"
+                    },
+                    "searchResult.resultType": {
+                        "label": "Result type",
+                        "format": "text"
+                    },
+                    "markdown": {
+                        "label": "Extracted Markdown",
+                        "format": "text"
+                    }
+                }
+            }
+        },
+        "searchResults": {
+            "title": "Search results",
+            "description": "A view showing just the Google Search results, without the page content.",
+            "transformation": {
+                "flatten": [
+                    "searchResult"
+                ],
+                "fields": [
+                    "searchResult.title",
+                    "searchResult.description",
+                    "searchResult.url",
+                    "searchResult.resultType",
+                    "searchResult.rank"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "searchResult.title": {
+                        "label": "Title",
+                        "format": "text"
+                    },
+                    "searchResult.description": {
+                        "label": "Description",
+                        "format": "text"
+                    },
+                    "searchResult.url": {
+                        "label": "URL",
+                        "format": "link"
+                    },
+                    "searchResult.resultType": {
+                        "label": "Type",
+                        "format": "text"
+                    },
+                    "searchResult.rank": {
+                        "label": "Rank",
+                        "format": "number"
+                    }
+                }
+            }
+        }
+    }
+}
