@@ -98,7 +98,7 @@ export function createSearchRequest(
     // (e.g. to  create extended CheerioCrawlOptions and pass it there?)
     const groups = proxyConfiguration?.groups || [];
     const protocol = groups.includes('GOOGLE_SERP') ? 'http' : 'https';
-    const urlSearch = `${protocol}://www.google.com/search?q=${query}&num=${n}`;
+    const urlSearch = `${protocol}://www.google.com/search?q=${encodeURIComponent(query)}&num=${n}`;
     return {
         url: urlSearch,
         uniqueKey: randomId(),

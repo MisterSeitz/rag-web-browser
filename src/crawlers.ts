@@ -15,7 +15,7 @@ import {
 import { ContentCrawlerTypes } from './const.js';
 import { scrapeOrganicResults } from './google-search/google-extractors-urls.js';
 import { failedRequestHandler, requestHandlerCheerio, requestHandlerPlaywright } from './request-handler.js';
-import { addEmptyResultToResponse, sendResponseError } from './responses.js';
+import { addEmptyResultToResponse, sendResponseError, sendResponseOk } from './responses.js';
 import type { ContentCrawlerOptions, ContentCrawlerUserData, SearchCrawlerUserData } from './types.js';
 import { addTimeMeasureEvent, createRequest } from './utils.js';
 
@@ -50,6 +50,9 @@ export const addContentCrawlRequest = async (
         log.info(`Added request to the ${name}-content-crawler: ${request.url}`);
     } catch (err) {
         log.error(`Error adding request to ${name}-content-crawler: ${request.url}, error: ${err}`);
+        if (responseId) {
+            sendResponseError(responseId, (err as Error).message);
+        }
     }
 };
 
@@ -76,15 +79,25 @@ export async function createAndStartSearchCrawler(
             const $ = _$ as CheerioAPI;
 
             log.info(`Search-crawler requestHandler: Processing URL: ${request.url}`);
-            const organicResults = scrapeOrganicResults($);
+            const organicResults = scrapeOrganicResults($, request.loadedUrl ?? request.url);
 
             // filter organic results to get only results with URL
             let results = organicResults.filter((result) => result.url !== undefined);
-            // remove results with URL starting with '/search?q=' (google return empty search results for images)
-            results = results.filter((result) => !result.url!.startsWith('/search?q='));
+            // normalize relative URLs and remove empty search / images links
+            results = results.map((result) => {
+                if (result.url && result.url.startsWith('/')) {
+                    result.url = `https://www.google.com${result.url}`;
+                }
+                return result;
+            }).filter((result) => result.url && result.url.startsWith('http') && !result.url.includes('/search?q='));
 
             if (results.length === 0) {
-                throw new Error(`No results found for search request: ${request.url}`);
+                log.warning(`No organic results found for search query: ${request.userData?.query}`);
+                const responseId = request.userData?.responseId;
+                if (responseId) {
+                    sendResponseOk(responseId, []);
+                }
+                return;
             }
 
             // limit the number of search results to the maxResults
@@ -110,7 +123,10 @@ export async function createAndStartSearchCrawler(
             addTimeMeasureEvent(request.userData!, 'cheerio-failed-request');
             log.error(`Google-search-crawler failed to process request ${request.url}, error ${err.message}`);
             const errorResponse = { errorMessage: err.message };
-            sendResponseError(request.uniqueKey, JSON.stringify(errorResponse));
+            const responseId = request.userData?.responseId;
+            if (responseId) {
+                sendResponseError(responseId, JSON.stringify(errorResponse));
+            }
         },
     });
     if (startCrawler) {
